@@ -156,6 +156,23 @@
 
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
 
+    /* Sliders de imagen */
+    .slider-row { margin-bottom: 10px; }
+    .slider-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-2); margin-bottom: 4px; }
+    .slider-label span:last-child { font-weight: 600; color: var(--green); font-size: 11px; }
+    .slider {
+      width: 100%; height: 4px; border-radius: 4px;
+      appearance: none; -webkit-appearance: none;
+      background: linear-gradient(to right, var(--green) 0%, var(--border) 0%);
+      outline: none; cursor: pointer;
+    }
+    .slider::-webkit-slider-thumb {
+      appearance: none; -webkit-appearance: none;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--green); cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
     @media (max-width: 768px) {
       .main { grid-template-columns: 1fr; }
       .right { border-left: none; border-top: 1px solid var(--border); }
@@ -253,6 +270,41 @@
         <input type="text" id="pPrice" placeholder="Precio" value="$2.500">
       </div>
       <button class="btn-ok" onclick="applyProduct()">Actualizar producto</button>
+    </div>
+
+    <!-- Ajuste de imagen -->
+    <div class="card">
+      <div class="card-title">🎨 Ajuste de imagen</div>
+
+      <div class="slider-row">
+        <div class="slider-label"><span>☀️ Brillo</span><span id="vBrillo">100%</span></div>
+        <input type="range" min="50" max="200" value="100" class="slider" id="sBrillo" oninput="applyFilters()">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label"><span>🌗 Contraste</span><span id="vContraste">100%</span></div>
+        <input type="range" min="50" max="200" value="100" class="slider" id="sContraste" oninput="applyFilters()">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label"><span>🎨 Saturación</span><span id="vSaturacion">100%</span></div>
+        <input type="range" min="0" max="200" value="100" class="slider" id="sSaturacion" oninput="applyFilters()">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label"><span>🌡️ Calidez</span><span id="vCalidez">0°</span></div>
+        <input type="range" min="-30" max="30" value="0" class="slider" id="sCalidez" oninput="applyFilters()">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label"><span>✨ Nitidez</span><span id="vNitidez">0</span></div>
+        <input type="range" min="0" max="5" value="0" step="0.5" class="slider" id="sNitidez" oninput="applyFilters()">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label"><span>🌫️ Suavizado</span><span id="vBlur">0px</span></div>
+        <input type="range" min="0" max="3" value="0" step="0.5" class="slider" id="sBlur" oninput="applyFilters()">
+      </div>
+
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button class="btn-ok" style="flex:1" onclick="resetFilters()">↺ Resetear</button>
+        <button class="btn-ok" style="flex:1;background:var(--green);color:#fff;border-color:var(--green)" onclick="autoFix()">⚡ Auto Fix</button>
+      </div>
     </div>
 
     <!-- Stream -->
@@ -363,6 +415,71 @@
   }
 
   updateDest();
+
+  // ── Filtros de imagen ─────────────────────────────────────────────
+  function applyFilters() {
+    const brillo     = document.getElementById('sBrillo').value;
+    const contraste  = document.getElementById('sContraste').value;
+    const saturacion = document.getElementById('sSaturacion').value;
+    const calidez    = parseInt(document.getElementById('sCalidez').value);
+    const nitidez    = document.getElementById('sNitidez').value;
+    const blur       = document.getElementById('sBlur').value;
+
+    // Labels
+    document.getElementById('vBrillo').textContent     = brillo + '%';
+    document.getElementById('vContraste').textContent  = contraste + '%';
+    document.getElementById('vSaturacion').textContent = saturacion + '%';
+    document.getElementById('vCalidez').textContent    = (calidez >= 0 ? '+' : '') + calidez + '°';
+    document.getElementById('vNitidez').textContent    = nitidez;
+    document.getElementById('vBlur').textContent       = blur + 'px';
+
+    // Filtro CSS principal
+    let filterStr = `brightness(${brillo}%) contrast(${contraste}%) saturate(${saturacion}%) blur(${blur}px)`;
+    if (parseFloat(nitidez) > 0) {
+      filterStr += ` drop-shadow(0 0 ${nitidez * 0.3}px rgba(255,255,255,0.3))`;
+    }
+    document.getElementById('camVideo').style.filter = filterStr;
+
+    // Calidez — sepia leve para cálido, hue-rotate para frío
+    if (calidez > 0) {
+      document.getElementById('camVideo').style.filter += ` sepia(${calidez * 1.5}%) hue-rotate(-${calidez * 0.5}deg)`;
+    } else if (calidez < 0) {
+      document.getElementById('camVideo').style.filter += ` hue-rotate(${Math.abs(calidez) * 0.8}deg)`;
+    }
+
+    // Actualizar barra de slider visualmente
+    ['sBrillo','sContraste','sSaturacion','sCalidez','sNitidez','sBlur'].forEach(id => {
+      const el = document.getElementById(id);
+      const min = parseFloat(el.min), max = parseFloat(el.max), val = parseFloat(el.value);
+      const pct = ((val - min) / (max - min)) * 100;
+      el.style.background = `linear-gradient(to right, var(--green) ${pct}%, var(--border) ${pct}%)`;
+    });
+  }
+
+  function resetFilters() {
+    document.getElementById('sBrillo').value     = 100;
+    document.getElementById('sContraste').value  = 100;
+    document.getElementById('sSaturacion').value = 100;
+    document.getElementById('sCalidez').value    = 0;
+    document.getElementById('sNitidez').value    = 0;
+    document.getElementById('sBlur').value       = 0;
+    document.getElementById('camVideo').style.filter = '';
+    applyFilters();
+  }
+
+  function autoFix() {
+    // Configuración óptima para imagen oscura típica de webcam
+    document.getElementById('sBrillo').value     = 140;
+    document.getElementById('sContraste').value  = 115;
+    document.getElementById('sSaturacion').value = 120;
+    document.getElementById('sCalidez').value    = 8;
+    document.getElementById('sNitidez').value    = 1.5;
+    document.getElementById('sBlur').value       = 0;
+    applyFilters();
+  }
+
+  // Inicializar sliders al arrancar
+  applyFilters();
 </script>
 </body>
 </html>
