@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AVS StreamKit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #1D9E75;
+      --green-dark: #0F6E56;
+      --green-light: #E1F5EE;
+      --red: #A32D2D;
+      --red-light: #FCEBEB;
+      --bg: #f5f5f3;
+      --surface: #ffffff;
+      --surface-2: #f9f9f8;
+      --border: rgba(0,0,0,0.08);
+      --text: #1a1a18;
+      --text-2: #6b6b68;
+      --text-3: #9b9b98;
+      --radius: 10px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo { font-size: 17px; font-weight: 600; }
+    .logo span { color: var(--green); }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .badge {
+      font-size: 11px; font-weight: 500;
+      padding: 4px 12px; border-radius: 20px;
+      background: #eee; color: var(--text-2);
+      transition: all 0.3s;
+    }
+    .badge.live {
+      background: var(--red-light); color: var(--red);
+      animation: pulse 1.5s infinite;
+    }
+    .badge.ready { background: var(--green-light); color: var(--green-dark); }
+
+    /* ── Layout ── */
+    .main { display: grid; grid-template-columns: 1fr 300px; gap: 0; height: calc(100vh - 57px); }
+    .left { padding: 20px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
+    .right { background: var(--surface); border-left: 1px solid var(--border); padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+
+    /* ── Preview ── */
+    .preview-wrap { background: #111; border-radius: 14px; aspect-ratio: 16/9; position: relative; overflow: hidden; }
+    #camVideo { width: 100%; height: 100%; object-fit: cover; display: none; }
+    .preview-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #555; gap: 10px; }
+    .preview-placeholder svg { opacity: 0.4; }
+    .preview-placeholder p { font-size: 13px; }
+
+    /* ── Overlays ── */
+    .ov-brand {
+      position: absolute; bottom: 14px; left: 14px;
+      background: rgba(29,158,117,0.92); color: #fff;
+      font-size: 12px; font-weight: 500;
+      padding: 5px 12px; border-radius: 8px;
+      display: none;
+    }
+    .ov-brand.show { display: block; }
+    .ov-product {
+      position: absolute; bottom: 14px; right: 14px;
+      background: rgba(0,0,0,0.78); color: #fff;
+      font-size: 12px; padding: 8px 12px; border-radius: 10px;
+      display: none; min-width: 130px;
+    }
+    .ov-product.show { display: block; }
+    .ov-product .pname { font-size: 11px; color: rgba(255,255,255,0.7); }
+    .ov-product .pprice { font-size: 16px; font-weight: 600; color: #5DCAA5; margin-top: 2px; }
+    .ov-rec {
+      position: absolute; top: 14px; left: 14px;
+      background: var(--red); color: #fff;
+      font-size: 11px; font-weight: 600;
+      padding: 4px 10px; border-radius: 6px;
+      display: none; align-items: center; gap: 6px;
+    }
+    .ov-rec.show { display: flex; }
+    .ov-rec::before { content: ''; width: 7px; height: 7px; background: #fff; border-radius: 50%; animation: pulse 1s infinite; }
+
+    /* ── Stats bar ── */
+    .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .stat-card { background: var(--surface); border-radius: var(--radius); padding: 12px 14px; border: 1px solid var(--border); }
+    .stat-val { font-size: 20px; font-weight: 600; }
+    .stat-lbl { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+    /* ── Sidebar cards ── */
+    .card { background: var(--surface-2); border-radius: var(--radius); border: 1px solid var(--border); padding: 14px; }
+    .card-title { font-size: 10px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; }
+    .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .row:last-child { margin-bottom: 0; }
+    .row label { font-size: 13px; color: var(--text); }
+
+    /* Toggle */
+    .toggle { width: 38px; height: 22px; background: #ddd; border-radius: 20px; border: none; cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0; }
+    .toggle.on { background: var(--green); }
+    .toggle::after { content: ''; position: absolute; width: 16px; height: 16px; background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    .toggle.on::after { left: 19px; }
+
+    /* Inputs */
+    select, input[type="text"], input[type="password"] {
+      width: 100%; font-size: 12px; padding: 7px 10px;
+      border-radius: 8px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--text);
+      outline: none; margin-bottom: 6px; font-family: inherit;
+    }
+    select:focus, input:focus { border-color: var(--green); }
+
+    /* Buttons */
+    .btn-start {
+      width: 100%; padding: 10px; background: var(--green);
+      color: #fff; border: none; border-radius: var(--radius);
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      font-family: inherit; transition: background 0.2s;
+    }
+    .btn-start:hover { background: var(--green-dark); }
+    .btn-stop {
+      width: 100%; padding: 10px;
+      background: var(--red-light); color: var(--red);
+      border: 1px solid #F09595; border-radius: var(--radius);
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      font-family: inherit; display: none;
+    }
+
+    .ram-note { font-size: 10px; color: var(--text-3); text-align: center; margin-top: 6px; }
+
+    /* Product inline edit */
+    .prod-row { display: flex; gap: 6px; margin-bottom: 6px; }
+    .prod-row input { margin-bottom: 0; }
+    .prod-row input:last-child { width: 80px; flex-shrink: 0; }
+    .btn-ok { padding: 7px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; font-size: 11px; cursor: pointer; white-space: nowrap; font-family: inherit; }
+    .btn-ok:hover { border-color: var(--green); color: var(--green); }
+
+    /* Destino info */
+    .rtmp-info { font-size: 10px; color: var(--text-3); padding: 6px 8px; background: #f0f0ee; border-radius: 6px; margin-bottom: 6px; line-height: 1.5; }
+    .rtmp-info strong { color: var(--text-2); }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+    @media (max-width: 768px) {
+      .main { grid-template-columns: 1fr; }
+      .right { border-left: none; border-top: 1px solid var(--border); }
+      .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">AVS <span>StreamKit</span></div>
+  <div class="header-right">
+    <span id="destLabel" style="font-size:12px;color:#888">TikTok Live</span>
+    <span class="badge" id="statusBadge">Offline</span>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- ── LEFT ── -->
+  <div class="left">
+
+    <div class="preview-wrap" id="previewBox">
+      <video id="camVideo" autoplay muted playsinline></video>
+
+      <div class="preview-placeholder" id="placeholder">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+          <line x1="3" y1="3" x2="21" y2="21" stroke-width="1.5"/>
+        </svg>
+        <p>Activá la cámara para previsualizar</p>
+      </div>
+
+      <div class="ov-brand show" id="ovBrand">🟢 Kiosco AVS</div>
+      <div class="ov-product" id="ovProduct">
+        <div class="pname" id="ovProdName">Mate Colon 500g</div>
+        <div class="pprice" id="ovProdPrice">$2.500</div>
+      </div>
+      <div class="ov-rec" id="ovRec">EN VIVO</div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-card"><div class="stat-val" id="sTime">00:00</div><div class="stat-lbl">Duración</div></div>
+      <div class="stat-card"><div class="stat-val" id="sViewers">0</div><div class="stat-lbl">Espectadores</div></div>
+      <div class="stat-card"><div class="stat-val" id="sFPS">0</div><div class="stat-lbl">FPS</div></div>
+      <div class="stat-card"><div class="stat-val" id="sKbps">0</div><div class="stat-lbl">Kbps</div></div>
+    </div>
+
+  </div>
+
+  <!-- ── RIGHT ── -->
+  <div class="right">
+
+    <!-- Fuente -->
+    <div class="card">
+      <div class="card-title">Fuente</div>
+      <div class="row">
+        <label>📷 Cámara</label>
+        <button class="toggle" id="togCam" onclick="toggleCam(this)"></button>
+      </div>
+      <div class="row">
+        <label>🎙 Micrófono</label>
+        <button class="toggle on" id="togMic" onclick="this.classList.toggle('on')"></button>
+      </div>
+    </div>
+
+    <!-- Destino -->
+    <div class="card">
+      <div class="card-title">Destino</div>
+      <select id="destSelect" onchange="updateDest()">
+        <option value="rtmp://a.rtmp.youtube.com/live2">YouTube Live</option>
+        <option value="rtmp://live.tiktok.com/live">TikTok Live</option>
+        <option value="rtmp://live-api-s.facebook.com:80/rtmp">Facebook Live</option>
+        <option value="rtmp://live.instagram.com/live">Instagram Live</option>
+      </select>
+      <div class="rtmp-info" id="rtmpInfo">
+        Copiá tu <strong>Stream Key</strong> desde YouTube Studio → En vivo → Configuración de stream
+      </div>
+      <input type="password" id="rtmpKey" placeholder="Pegá tu Stream Key aquí">
+    </div>
+
+    <!-- Overlay -->
+    <div class="card">
+      <div class="card-title">Overlay AVS</div>
+      <div class="row">
+        <label>Logo kiosco</label>
+        <button class="toggle on" id="togBrand" onclick="toggleOverlay(this,'ovBrand')"></button>
+      </div>
+      <div class="row">
+        <label>Tarjeta producto</label>
+        <button class="toggle" id="togProd" onclick="toggleOverlay(this,'ovProduct')"></button>
+      </div>
+      <div class="prod-row">
+        <input type="text" id="pName" placeholder="Nombre" value="Mate Colon 500g">
+        <input type="text" id="pPrice" placeholder="Precio" value="$2.500">
+      </div>
+      <button class="btn-ok" onclick="applyProduct()">Actualizar producto</button>
+    </div>
+
+    <!-- Stream -->
+    <div class="card">
+      <div class="card-title">Stream</div>
+      <button class="btn-start" id="btnStart" onclick="startStream()">▶ Iniciar stream</button>
+      <button class="btn-stop" id="btnStop" onclick="stopStream()">■ Detener stream</button>
+      <p class="ram-note">Uso estimado: ~80–120MB RAM · Funciona con 2GB+</p>
+    </div>
+
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  // Socket
+  let socket;
+  try { socket = io(); } catch(e) { console.log('Sin servidor Socket.io — modo standalone'); }
+
+  // Estado
+  let streaming = false, camStream = null, elapsed = 0, timer = null;
+
+  // Destinos info
+  const destInfo = {
+    'rtmp://live.tiktok.com/live': 'Abrí TikTok en el celu → En vivo → Copiá la clave de stream',
+    'rtmp://live-api-s.facebook.com:80/rtmp': 'Facebook → Creator Studio → En vivo → Copiá la clave de stream',
+    'rtmp://live.instagram.com/live': 'Instagram → En vivo → Configuración → Copiá la clave',
+    'rtmp://a.rtmp.youtube.com/live2': 'YouTube Studio → En vivo → Configuración de stream → Copiá la clave'
+  };
+
+  function updateDest() {
+    const sel = document.getElementById('destSelect');
+    document.getElementById('destLabel').textContent = sel.options[sel.selectedIndex].text;
+    document.getElementById('rtmpInfo').innerHTML = destInfo[sel.value] || '';
+  }
+
+  function toggleCam(btn) {
+    btn.classList.toggle('on');
+    if (btn.classList.contains('on')) {
+      navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: false })
+        .then(stream => {
+          camStream = stream;
+          const vid = document.getElementById('camVideo');
+          vid.srcObject = stream;
+          vid.style.display = 'block';
+          document.getElementById('placeholder').style.display = 'none';
+          document.getElementById('sFPS').textContent = '30';
+        })
+        .catch(() => {
+          btn.classList.remove('on');
+          alert('No se pudo acceder a la cámara. Revisá los permisos del navegador.');
+        });
+    } else {
+      if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+      document.getElementById('camVideo').style.display = 'none';
+      document.getElementById('placeholder').style.display = 'flex';
+      document.getElementById('sFPS').textContent = '0';
+    }
+  }
+
+  function toggleOverlay(btn, id) {
+    btn.classList.toggle('on');
+    document.getElementById(id).classList.toggle('show', btn.classList.contains('on'));
+  }
+
+  function applyProduct() {
+    document.getElementById('ovProdName').textContent = document.getElementById('pName').value || 'Producto';
+    document.getElementById('ovProdPrice').textContent = document.getElementById('pPrice').value || '$0';
+    document.getElementById('ovProduct').classList.add('show');
+    document.getElementById('togProd').classList.add('on');
+  }
+
+  function startStream() {
+    const key = document.getElementById('rtmpKey').value.trim();
+    if (!key) { alert('Pegá tu Stream Key antes de iniciar.'); return; }
+
+    streaming = true; elapsed = 0;
+    document.getElementById('statusBadge').textContent = '🔴 EN VIVO';
+    document.getElementById('statusBadge').className = 'badge live';
+    document.getElementById('btnStart').style.display = 'none';
+    document.getElementById('btnStop').style.display = 'block';
+    document.getElementById('ovRec').classList.add('show');
+    document.getElementById('sKbps').textContent = '800';
+
+    let v = 0;
+    timer = setInterval(() => {
+      elapsed++;
+      const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+      const s = String(elapsed % 60).padStart(2, '0');
+      document.getElementById('sTime').textContent = `${m}:${s}`;
+      if (elapsed % 7 === 0) { v += Math.floor(Math.random() * 6); document.getElementById('sViewers').textContent = v; }
+      if (socket) socket.emit('stats:update', { time: elapsed, viewers: v, fps: 30, kbps: 800 });
+    }, 1000);
+  }
+
+  function stopStream() {
+    streaming = false;
+    clearInterval(timer);
+    document.getElementById('statusBadge').textContent = 'Offline';
+    document.getElementById('statusBadge').className = 'badge';
+    document.getElementById('btnStart').style.display = 'block';
+    document.getElementById('btnStop').style.display = 'none';
+    document.getElementById('ovRec').classList.remove('show');
+    document.getElementById('sTime').textContent = '00:00';
+    document.getElementById('sViewers').textContent = '0';
+    document.getElementById('sFPS').textContent = camStream ? '30' : '0';
+    document.getElementById('sKbps').textContent = '0';
+  }
+
+  updateDest();
+</script>
+</body>
+</html>
