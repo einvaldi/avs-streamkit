@@ -8,171 +8,88 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --green: #1D9E75;
-      --green-dark: #0F6E56;
-      --green-light: #E1F5EE;
-      --red: #A32D2D;
-      --red-light: #FCEBEB;
-      --bg: #f5f5f3;
-      --surface: #ffffff;
-      --surface-2: #f9f9f8;
-      --border: rgba(0,0,0,0.08);
-      --text: #1a1a18;
-      --text-2: #6b6b68;
-      --text-3: #9b9b98;
+      --green: #1D9E75; --green-dark: #0F6E56; --green-light: #E1F5EE;
+      --red: #A32D2D; --red-light: #FCEBEB;
+      --bg: #f5f5f3; --surface: #ffffff; --surface-2: #f9f9f8;
+      --border: rgba(0,0,0,0.08); --text: #1a1a18; --text-2: #6b6b68; --text-3: #9b9b98;
       --radius: 10px;
     }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      padding: 0;
-    }
-
-    /* ── Header ── */
-    .header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 14px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
     .logo { font-size: 17px; font-weight: 600; }
     .logo span { color: var(--green); }
     .header-right { display: flex; align-items: center; gap: 10px; }
-    .badge {
-      font-size: 11px; font-weight: 500;
-      padding: 4px 12px; border-radius: 20px;
-      background: #eee; color: var(--text-2);
-      transition: all 0.3s;
-    }
-    .badge.live {
-      background: var(--red-light); color: var(--red);
-      animation: pulse 1.5s infinite;
-    }
+    .badge { font-size: 11px; font-weight: 500; padding: 4px 12px; border-radius: 20px; background: #eee; color: var(--text-2); transition: all 0.3s; }
+    .badge.live { background: var(--red-light); color: var(--red); animation: pulse 1.5s infinite; }
     .badge.ready { background: var(--green-light); color: var(--green-dark); }
-
-    /* ── Layout ── */
     .main { display: grid; grid-template-columns: 1fr 300px; gap: 0; height: calc(100vh - 57px); }
     .left { padding: 20px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
     .right { background: var(--surface); border-left: 1px solid var(--border); padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
-
-    /* ── Preview ── */
     .preview-wrap { background: #111; border-radius: 14px; aspect-ratio: 16/9; position: relative; overflow: hidden; }
-    #camVideo { width: 100%; height: 100%; object-fit: cover; display: none; }
+    #glCanvas { width: 100%; height: 100%; display: none; border-radius: 14px; }
+    #camVideo { display: none; }
     .preview-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #555; gap: 10px; }
     .preview-placeholder svg { opacity: 0.4; }
     .preview-placeholder p { font-size: 13px; }
-
-    /* ── Overlays ── */
-    .ov-brand {
-      position: absolute; bottom: 14px; left: 14px;
-      background: rgba(29,158,117,0.92); color: #fff;
-      font-size: 12px; font-weight: 500;
-      padding: 5px 12px; border-radius: 8px;
-      display: none;
-    }
+    .ov-brand { position: absolute; bottom: 14px; left: 14px; background: rgba(29,158,117,0.92); color: #fff; font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 8px; display: none; }
     .ov-brand.show { display: block; }
-    .ov-product {
-      position: absolute; bottom: 14px; right: 14px;
-      background: rgba(0,0,0,0.78); color: #fff;
-      font-size: 12px; padding: 8px 12px; border-radius: 10px;
-      display: none; min-width: 130px;
-    }
+    .ov-product { position: absolute; bottom: 14px; right: 14px; background: rgba(0,0,0,0.78); color: #fff; font-size: 12px; padding: 8px 12px; border-radius: 10px; display: none; min-width: 130px; }
     .ov-product.show { display: block; }
     .ov-product .pname { font-size: 11px; color: rgba(255,255,255,0.7); }
     .ov-product .pprice { font-size: 16px; font-weight: 600; color: #5DCAA5; margin-top: 2px; }
-    .ov-rec {
-      position: absolute; top: 14px; left: 14px;
-      background: var(--red); color: #fff;
-      font-size: 11px; font-weight: 600;
-      padding: 4px 10px; border-radius: 6px;
-      display: none; align-items: center; gap: 6px;
-    }
+    .ov-rec { position: absolute; top: 14px; left: 14px; background: var(--red); color: #fff; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px; display: none; align-items: center; gap: 6px; }
     .ov-rec.show { display: flex; }
     .ov-rec::before { content: ''; width: 7px; height: 7px; background: #fff; border-radius: 50%; animation: pulse 1s infinite; }
 
-    /* ── Stats bar ── */
+    /* GPU Badge */
+    .gpu-badge { position: absolute; top: 14px; right: 14px; background: rgba(29,158,117,0.9); color: #fff; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 6px; display: none; gap: 4px; align-items: center; }
+    .gpu-badge.show { display: flex; }
+    .gpu-fps { position: absolute; top: 40px; right: 14px; background: rgba(0,0,0,0.6); color: #5DCAA5; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; display: none; font-family: monospace; }
+    .gpu-fps.show { display: block; }
+
     .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
     .stat-card { background: var(--surface); border-radius: var(--radius); padding: 12px 14px; border: 1px solid var(--border); }
     .stat-val { font-size: 20px; font-weight: 600; }
     .stat-lbl { font-size: 11px; color: var(--text-3); margin-top: 2px; }
-
-    /* ── Sidebar cards ── */
     .card { background: var(--surface-2); border-radius: var(--radius); border: 1px solid var(--border); padding: 14px; }
     .card-title { font-size: 10px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; }
     .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
     .row:last-child { margin-bottom: 0; }
     .row label { font-size: 13px; color: var(--text); }
-
-    /* Toggle */
     .toggle { width: 38px; height: 22px; background: #ddd; border-radius: 20px; border: none; cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0; }
     .toggle.on { background: var(--green); }
     .toggle::after { content: ''; position: absolute; width: 16px; height: 16px; background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
     .toggle.on::after { left: 19px; }
-
-    /* Inputs */
-    select, input[type="text"], input[type="password"] {
-      width: 100%; font-size: 12px; padding: 7px 10px;
-      border-radius: 8px; border: 1px solid var(--border);
-      background: var(--surface); color: var(--text);
-      outline: none; margin-bottom: 6px; font-family: inherit;
-    }
+    select, input[type="text"], input[type="password"] { width: 100%; font-size: 12px; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); outline: none; margin-bottom: 6px; font-family: inherit; }
     select:focus, input:focus { border-color: var(--green); }
-
-    /* Buttons */
-    .btn-start {
-      width: 100%; padding: 10px; background: var(--green);
-      color: #fff; border: none; border-radius: var(--radius);
-      font-size: 13px; font-weight: 600; cursor: pointer;
-      font-family: inherit; transition: background 0.2s;
-    }
+    .btn-start { width: 100%; padding: 10px; background: var(--green); color: #fff; border: none; border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.2s; }
     .btn-start:hover { background: var(--green-dark); }
-    .btn-stop {
-      width: 100%; padding: 10px;
-      background: var(--red-light); color: var(--red);
-      border: 1px solid #F09595; border-radius: var(--radius);
-      font-size: 13px; font-weight: 600; cursor: pointer;
-      font-family: inherit; display: none;
-    }
-
+    .btn-stop { width: 100%; padding: 10px; background: var(--red-light); color: var(--red); border: 1px solid #F09595; border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; display: none; }
     .ram-note { font-size: 10px; color: var(--text-3); text-align: center; margin-top: 6px; }
-
-    /* Product inline edit */
     .prod-row { display: flex; gap: 6px; margin-bottom: 6px; }
     .prod-row input { margin-bottom: 0; }
     .prod-row input:last-child { width: 80px; flex-shrink: 0; }
     .btn-ok { padding: 7px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; font-size: 11px; cursor: pointer; white-space: nowrap; font-family: inherit; }
     .btn-ok:hover { border-color: var(--green); color: var(--green); }
-
-    /* Destino info */
     .rtmp-info { font-size: 10px; color: var(--text-3); padding: 6px 8px; background: #f0f0ee; border-radius: 6px; margin-bottom: 6px; line-height: 1.5; }
     .rtmp-info strong { color: var(--text-2); }
 
+    /* Sliders */
+    .slider-row { margin-bottom: 9px; }
+    .slider-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-2); margin-bottom: 3px; }
+    .slider-label span:last-child { font-weight: 600; color: var(--green); }
+    .slider { width: 100%; height: 4px; border-radius: 4px; appearance: none; -webkit-appearance: none; background: linear-gradient(to right, var(--green) 50%, #ddd 50%); outline: none; cursor: pointer; }
+    .slider::-webkit-slider-thumb { appearance: none; width: 15px; height: 15px; border-radius: 50%; background: var(--green); cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+    .btn-row { display: flex; gap: 6px; margin-top: 8px; }
+    .btn-auto { flex: 1; padding: 7px; background: var(--green); color: #fff; border: none; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .btn-reset { flex: 1; padding: 7px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; font-size: 11px; cursor: pointer; font-family: inherit; }
+
+    /* GPU mode indicator */
+    .mode-bar { display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; border-radius: 8px; background: var(--green-light); border: 1px solid rgba(29,158,117,0.2); margin-bottom: 8px; font-size: 11px; color: var(--green-dark); font-weight: 500; }
+    .mode-bar.off { background: #f0f0ee; color: var(--text-3); border-color: var(--border); }
+
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-
-    /* Sliders de imagen */
-    .slider-row { margin-bottom: 10px; }
-    .slider-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-2); margin-bottom: 4px; }
-    .slider-label span:last-child { font-weight: 600; color: var(--green); font-size: 11px; }
-    .slider {
-      width: 100%; height: 4px; border-radius: 4px;
-      appearance: none; -webkit-appearance: none;
-      background: linear-gradient(to right, var(--green) 0%, var(--border) 0%);
-      outline: none; cursor: pointer;
-    }
-    .slider::-webkit-slider-thumb {
-      appearance: none; -webkit-appearance: none;
-      width: 16px; height: 16px; border-radius: 50%;
-      background: var(--green); cursor: pointer;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-    }
-
     @media (max-width: 768px) {
       .main { grid-template-columns: 1fr; }
       .right { border-left: none; border-top: 1px solid var(--border); }
@@ -185,18 +102,18 @@
 <header class="header">
   <div class="logo">AVS <span>StreamKit</span></div>
   <div class="header-right">
-    <span id="destLabel" style="font-size:12px;color:#888">TikTok Live</span>
+    <span id="destLabel" style="font-size:12px;color:#888">YouTube Live</span>
     <span class="badge" id="statusBadge">Offline</span>
   </div>
 </header>
 
 <div class="main">
-
-  <!-- ── LEFT ── -->
   <div class="left">
-
     <div class="preview-wrap" id="previewBox">
-      <video id="camVideo" autoplay muted playsinline></video>
+      <!-- Video oculto — fuente para WebGL -->
+      <video id="camVideo" autoplay muted playsinline style="display:none"></video>
+      <!-- Canvas WebGL — el que ve el usuario -->
+      <canvas id="glCanvas"></canvas>
 
       <div class="preview-placeholder" id="placeholder">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -212,18 +129,18 @@
         <div class="pprice" id="ovProdPrice">$2.500</div>
       </div>
       <div class="ov-rec" id="ovRec">EN VIVO</div>
+      <div class="gpu-badge" id="gpuBadge">⚡ GPU ON</div>
+      <div class="gpu-fps" id="gpuFps">60 FPS</div>
     </div>
 
     <div class="stats-bar">
       <div class="stat-card"><div class="stat-val" id="sTime">00:00</div><div class="stat-lbl">Duración</div></div>
       <div class="stat-card"><div class="stat-val" id="sViewers">0</div><div class="stat-lbl">Espectadores</div></div>
-      <div class="stat-card"><div class="stat-val" id="sFPS">0</div><div class="stat-lbl">FPS</div></div>
+      <div class="stat-card"><div class="stat-val" id="sFPS">0</div><div class="stat-lbl">FPS render</div></div>
       <div class="stat-card"><div class="stat-val" id="sKbps">0</div><div class="stat-lbl">Kbps</div></div>
     </div>
-
   </div>
 
-  <!-- ── RIGHT ── -->
   <div class="right">
 
     <!-- Fuente -->
@@ -254,6 +171,50 @@
       <input type="password" id="rtmpKey" placeholder="Pegá tu Stream Key aquí">
     </div>
 
+    <!-- Motor GPU -->
+    <div class="card">
+      <div class="card-title">⚡ Motor GPU — Mejora de imagen</div>
+      <div class="mode-bar off" id="modeBar">🔴 GPU inactiva — activá la cámara</div>
+
+      <div class="slider-row">
+        <div class="slider-label"><span>☀️ Brillo</span><span id="vBrillo">0</span></div>
+        <input type="range" min="-100" max="100" value="0" class="slider" id="sBrillo" oninput="updateShader()">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label"><span>🌗 Contraste</span><span id="vContraste">1.0x</span></div>
+        <input type="range" min="50" max="200" value="100" class="slider" id="sContraste" oninput="updateShader()">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label"><span>🎨 Saturación</span><span id="vSaturacion">1.0x</span></div>
+        <input type="range" min="0" max="300" value="100" class="slider" id="sSaturacion" oninput="updateShader()">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label"><span>🌡️ Calidez</span><span id="vCalidez">0</span></div>
+        <input type="range" min="-50" max="50" value="0" class="slider" id="sCalidez" oninput="updateShader()">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label"><span>✨ Nitidez</span><span id="vNitidez">0</span></div>
+        <input type="range" min="0" max="10" value="0" step="0.5" class="slider" id="sNitidez" oninput="updateShader()">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label"><span>🔇 Ruido</span><span id="vNoise">0</span></div>
+        <input type="range" min="0" max="3" value="0" step="0.25" class="slider" id="sNoise" oninput="updateShader()">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label"><span>🎭 Suavizado piel</span><span id="vSkin">0</span></div>
+        <input type="range" min="0" max="5" value="0" step="0.5" class="slider" id="sSkin" oninput="updateShader()">
+      </div>
+      <div class="slider-row">
+        <div class="slider-label"><span>🖼️ Viñeta</span><span id="vVignette">0</span></div>
+        <input type="range" min="0" max="10" value="0" step="0.5" class="slider" id="sVignette" oninput="updateShader()">
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-reset" onclick="resetShader()">↺ Reset</button>
+        <button class="btn-auto" onclick="autoFix()">⚡ Auto Fix</button>
+      </div>
+    </div>
+
     <!-- Overlay -->
     <div class="card">
       <div class="card-title">Overlay AVS</div>
@@ -272,47 +233,12 @@
       <button class="btn-ok" onclick="applyProduct()">Actualizar producto</button>
     </div>
 
-    <!-- Ajuste de imagen -->
-    <div class="card">
-      <div class="card-title">🎨 Ajuste de imagen</div>
-
-      <div class="slider-row">
-        <div class="slider-label"><span>☀️ Brillo</span><span id="vBrillo">100%</span></div>
-        <input type="range" min="50" max="200" value="100" class="slider" id="sBrillo" oninput="applyFilters()">
-      </div>
-      <div class="slider-row">
-        <div class="slider-label"><span>🌗 Contraste</span><span id="vContraste">100%</span></div>
-        <input type="range" min="50" max="200" value="100" class="slider" id="sContraste" oninput="applyFilters()">
-      </div>
-      <div class="slider-row">
-        <div class="slider-label"><span>🎨 Saturación</span><span id="vSaturacion">100%</span></div>
-        <input type="range" min="0" max="200" value="100" class="slider" id="sSaturacion" oninput="applyFilters()">
-      </div>
-      <div class="slider-row">
-        <div class="slider-label"><span>🌡️ Calidez</span><span id="vCalidez">0°</span></div>
-        <input type="range" min="-30" max="30" value="0" class="slider" id="sCalidez" oninput="applyFilters()">
-      </div>
-      <div class="slider-row">
-        <div class="slider-label"><span>✨ Nitidez</span><span id="vNitidez">0</span></div>
-        <input type="range" min="0" max="5" value="0" step="0.5" class="slider" id="sNitidez" oninput="applyFilters()">
-      </div>
-      <div class="slider-row">
-        <div class="slider-label"><span>🌫️ Suavizado</span><span id="vBlur">0px</span></div>
-        <input type="range" min="0" max="3" value="0" step="0.5" class="slider" id="sBlur" oninput="applyFilters()">
-      </div>
-
-      <div style="display:flex;gap:6px;margin-top:8px;">
-        <button class="btn-ok" style="flex:1" onclick="resetFilters()">↺ Resetear</button>
-        <button class="btn-ok" style="flex:1;background:var(--green);color:#fff;border-color:var(--green)" onclick="autoFix()">⚡ Auto Fix</button>
-      </div>
-    </div>
-
     <!-- Stream -->
     <div class="card">
       <div class="card-title">Stream</div>
       <button class="btn-start" id="btnStart" onclick="startStream()">▶ Iniciar stream</button>
       <button class="btn-stop" id="btnStop" onclick="stopStream()">■ Detener stream</button>
-      <p class="ram-note">Uso estimado: ~80–120MB RAM · Funciona con 2GB+</p>
+      <p class="ram-note">⚡ GPU activa · ~80MB RAM · Funciona con 2GB+</p>
     </div>
 
   </div>
@@ -320,166 +246,411 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-  // Socket
-  let socket;
-  try { socket = io(); } catch(e) { console.log('Sin servidor Socket.io — modo standalone'); }
+// ══════════════════════════════════════════════════════
+//  AVS StreamKit — Motor WebGL GPU
+//  Procesa cada frame de la cámara en la GPU:
+//  brillo, contraste, saturación, nitidez,
+//  reducción de ruido, suavizado de piel, viñeta
+// ══════════════════════════════════════════════════════
 
-  // Estado
-  let streaming = false, camStream = null, elapsed = 0, timer = null;
+let socket;
+try { socket = io(); } catch(e) {}
 
-  // Destinos info
-  const destInfo = {
-    'rtmp://live.tiktok.com/live': 'Abrí TikTok en el celu → En vivo → Copiá la clave de stream',
-    'rtmp://live-api-s.facebook.com:80/rtmp': 'Facebook → Creator Studio → En vivo → Copiá la clave de stream',
-    'rtmp://live.instagram.com/live': 'Instagram → En vivo → Configuración → Copiá la clave',
-    'rtmp://a.rtmp.youtube.com/live2': 'YouTube Studio → En vivo → Configuración de stream → Copiá la clave'
-  };
+let streaming = false, camStream = null, elapsed = 0, timer = null;
+let gl = null, program = null, texture = null, rafId = null;
+let frameCount = 0, lastFpsTime = 0, currentFps = 0;
 
-  function updateDest() {
-    const sel = document.getElementById('destSelect');
-    document.getElementById('destLabel').textContent = sel.options[sel.selectedIndex].text;
-    document.getElementById('rtmpInfo').innerHTML = destInfo[sel.value] || '';
+// Parámetros del shader — valores por defecto
+let params = {
+  brightness: 0.0,
+  contrast: 1.0,
+  saturation: 1.0,
+  warmth: 0.0,
+  sharpness: 0.0,
+  denoise: 0.0,
+  skinSmooth: 0.0,
+  vignette: 0.0
+};
+
+// ── Vertex Shader — posiciona el quad ──────────────────
+const VS = `
+  attribute vec2 a_position;
+  attribute vec2 a_texCoord;
+  varying vec2 v_texCoord;
+  void main() {
+    gl_Position = vec4(a_position, 0, 1);
+    v_texCoord = a_texCoord;
   }
+`;
 
-  function toggleCam(btn) {
-    btn.classList.toggle('on');
-    if (btn.classList.contains('on')) {
-      navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: false })
-        .then(stream => {
-          camStream = stream;
-          const vid = document.getElementById('camVideo');
-          vid.srcObject = stream;
-          vid.style.display = 'block';
-          document.getElementById('placeholder').style.display = 'none';
-          document.getElementById('sFPS').textContent = '30';
-        })
-        .catch(() => {
-          btn.classList.remove('on');
-          alert('No se pudo acceder a la cámara. Revisá los permisos del navegador.');
-        });
-    } else {
-      if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
-      document.getElementById('camVideo').style.display = 'none';
-      document.getElementById('placeholder').style.display = 'flex';
-      document.getElementById('sFPS').textContent = '0';
+// ── Fragment Shader — procesa cada pixel en GPU ────────
+const FS = `
+  precision mediump float;
+  uniform sampler2D u_texture;
+  uniform float u_brightness;
+  uniform float u_contrast;
+  uniform float u_saturation;
+  uniform float u_warmth;
+  uniform float u_sharpness;
+  uniform float u_denoise;
+  uniform float u_skinSmooth;
+  uniform float u_vignette;
+  uniform vec2 u_resolution;
+  varying vec2 v_texCoord;
+
+  vec3 rgb2hsl(vec3 c) {
+    float maxC = max(c.r, max(c.g, c.b));
+    float minC = min(c.r, min(c.g, c.b));
+    float h = 0.0, s = 0.0, l = (maxC + minC) / 2.0;
+    if (maxC != minC) {
+      float d = maxC - minC;
+      s = l > 0.5 ? d / (2.0 - maxC - minC) : d / (maxC + minC);
+      if (maxC == c.r) h = (c.g - c.b) / d + (c.g < c.b ? 6.0 : 0.0);
+      else if (maxC == c.g) h = (c.b - c.r) / d + 2.0;
+      else h = (c.r - c.g) / d + 4.0;
+      h /= 6.0;
     }
+    return vec3(h, s, l);
   }
 
-  function toggleOverlay(btn, id) {
-    btn.classList.toggle('on');
-    document.getElementById(id).classList.toggle('show', btn.classList.contains('on'));
+  float hue2rgb(float p, float q, float t) {
+    if (t < 0.0) t += 1.0;
+    if (t > 1.0) t -= 1.0;
+    if (t < 1.0/6.0) return p + (q - p) * 6.0 * t;
+    if (t < 1.0/2.0) return q;
+    if (t < 2.0/3.0) return p + (q - p) * (2.0/3.0 - t) * 6.0;
+    return p;
   }
 
-  function applyProduct() {
-    document.getElementById('ovProdName').textContent = document.getElementById('pName').value || 'Producto';
-    document.getElementById('ovProdPrice').textContent = document.getElementById('pPrice').value || '$0';
-    document.getElementById('ovProduct').classList.add('show');
-    document.getElementById('togProd').classList.add('on');
+  vec3 hsl2rgb(vec3 hsl) {
+    float h = hsl.x, s = hsl.y, l = hsl.z;
+    if (s == 0.0) return vec3(l);
+    float q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
+    float p = 2.0 * l - q;
+    return vec3(hue2rgb(p,q,h+1.0/3.0), hue2rgb(p,q,h), hue2rgb(p,q,h-1.0/3.0));
   }
 
-  function startStream() {
-    const key = document.getElementById('rtmpKey').value.trim();
-    if (!key) { alert('Pegá tu Stream Key antes de iniciar.'); return; }
+  void main() {
+    vec2 uv = v_texCoord;
+    vec2 texel = 1.0 / u_resolution;
 
-    streaming = true; elapsed = 0;
-    document.getElementById('statusBadge').textContent = '🔴 EN VIVO';
-    document.getElementById('statusBadge').className = 'badge live';
-    document.getElementById('btnStart').style.display = 'none';
-    document.getElementById('btnStop').style.display = 'block';
-    document.getElementById('ovRec').classList.add('show');
-    document.getElementById('sKbps').textContent = '800';
-
-    let v = 0;
-    timer = setInterval(() => {
-      elapsed++;
-      const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
-      const s = String(elapsed % 60).padStart(2, '0');
-      document.getElementById('sTime').textContent = `${m}:${s}`;
-      if (elapsed % 7 === 0) { v += Math.floor(Math.random() * 6); document.getElementById('sViewers').textContent = v; }
-      if (socket) socket.emit('stats:update', { time: elapsed, viewers: v, fps: 30, kbps: 800 });
-    }, 1000);
-  }
-
-  function stopStream() {
-    streaming = false;
-    clearInterval(timer);
-    document.getElementById('statusBadge').textContent = 'Offline';
-    document.getElementById('statusBadge').className = 'badge';
-    document.getElementById('btnStart').style.display = 'block';
-    document.getElementById('btnStop').style.display = 'none';
-    document.getElementById('ovRec').classList.remove('show');
-    document.getElementById('sTime').textContent = '00:00';
-    document.getElementById('sViewers').textContent = '0';
-    document.getElementById('sFPS').textContent = camStream ? '30' : '0';
-    document.getElementById('sKbps').textContent = '0';
-  }
-
-  updateDest();
-
-  // ── Filtros de imagen ─────────────────────────────────────────────
-  function applyFilters() {
-    const brillo     = document.getElementById('sBrillo').value;
-    const contraste  = document.getElementById('sContraste').value;
-    const saturacion = document.getElementById('sSaturacion').value;
-    const calidez    = parseInt(document.getElementById('sCalidez').value);
-    const nitidez    = document.getElementById('sNitidez').value;
-    const blur       = document.getElementById('sBlur').value;
-
-    // Labels
-    document.getElementById('vBrillo').textContent     = brillo + '%';
-    document.getElementById('vContraste').textContent  = contraste + '%';
-    document.getElementById('vSaturacion').textContent = saturacion + '%';
-    document.getElementById('vCalidez').textContent    = (calidez >= 0 ? '+' : '') + calidez + '°';
-    document.getElementById('vNitidez').textContent    = nitidez;
-    document.getElementById('vBlur').textContent       = blur + 'px';
-
-    // Filtro CSS principal
-    let filterStr = `brightness(${brillo}%) contrast(${contraste}%) saturate(${saturacion}%) blur(${blur}px)`;
-    if (parseFloat(nitidez) > 0) {
-      filterStr += ` drop-shadow(0 0 ${nitidez * 0.3}px rgba(255,255,255,0.3))`;
-    }
-    document.getElementById('camVideo').style.filter = filterStr;
-
-    // Calidez — sepia leve para cálido, hue-rotate para frío
-    if (calidez > 0) {
-      document.getElementById('camVideo').style.filter += ` sepia(${calidez * 1.5}%) hue-rotate(-${calidez * 0.5}deg)`;
-    } else if (calidez < 0) {
-      document.getElementById('camVideo').style.filter += ` hue-rotate(${Math.abs(calidez) * 0.8}deg)`;
+    // ── Reducción de ruido (promedio vecinos) ──
+    vec4 col = texture2D(u_texture, uv);
+    if (u_denoise > 0.0) {
+      float w = u_denoise * 0.003;
+      vec4 sum = vec4(0.0);
+      sum += texture2D(u_texture, uv + vec2(-w,-w)) * 0.0625;
+      sum += texture2D(u_texture, uv + vec2( 0,-w)) * 0.125;
+      sum += texture2D(u_texture, uv + vec2( w,-w)) * 0.0625;
+      sum += texture2D(u_texture, uv + vec2(-w, 0)) * 0.125;
+      sum += texture2D(u_texture, uv              ) * 0.25;
+      sum += texture2D(u_texture, uv + vec2( w, 0)) * 0.125;
+      sum += texture2D(u_texture, uv + vec2(-w, w)) * 0.0625;
+      sum += texture2D(u_texture, uv + vec2( 0, w)) * 0.125;
+      sum += texture2D(u_texture, uv + vec2( w, w)) * 0.0625;
+      col = mix(col, sum, u_denoise * 0.3);
     }
 
-    // Actualizar barra de slider visualmente
-    ['sBrillo','sContraste','sSaturacion','sCalidez','sNitidez','sBlur'].forEach(id => {
-      const el = document.getElementById(id);
-      const min = parseFloat(el.min), max = parseFloat(el.max), val = parseFloat(el.value);
-      const pct = ((val - min) / (max - min)) * 100;
-      el.style.background = `linear-gradient(to right, var(--green) ${pct}%, var(--border) ${pct}%)`;
-    });
+    vec3 color = col.rgb;
+
+    // ── Suavizado de piel (detecta tonos piel, suaviza solo esos) ──
+    if (u_skinSmooth > 0.0) {
+      float r = color.r, g = color.g, b = color.b;
+      bool isSkin = (r > 0.35 && g > 0.2 && b > 0.15 &&
+                     r > g && r > b &&
+                     abs(r - g) > 0.05 && r - b > 0.1);
+      if (isSkin) {
+        float s = u_skinSmooth * 0.004;
+        vec3 blur = vec3(0.0);
+        blur += texture2D(u_texture, uv + vec2(-s,0)).rgb;
+        blur += texture2D(u_texture, uv + vec2( s,0)).rgb;
+        blur += texture2D(u_texture, uv + vec2(0,-s)).rgb;
+        blur += texture2D(u_texture, uv + vec2(0, s)).rgb;
+        blur /= 4.0;
+        color = mix(color, blur, u_skinSmooth * 0.12);
+      }
+    }
+
+    // ── Nitidez (unsharp mask) ──
+    if (u_sharpness > 0.0) {
+      float sh = u_sharpness * 0.002;
+      vec3 blur2 = vec3(0.0);
+      blur2 += texture2D(u_texture, uv + vec2(-sh,-sh)).rgb * 0.111;
+      blur2 += texture2D(u_texture, uv + vec2(  0,-sh)).rgb * 0.111;
+      blur2 += texture2D(u_texture, uv + vec2( sh,-sh)).rgb * 0.111;
+      blur2 += texture2D(u_texture, uv + vec2(-sh,  0)).rgb * 0.111;
+      blur2 += color * 0.111;
+      blur2 += texture2D(u_texture, uv + vec2( sh,  0)).rgb * 0.111;
+      blur2 += texture2D(u_texture, uv + vec2(-sh, sh)).rgb * 0.111;
+      blur2 += texture2D(u_texture, uv + vec2(  0, sh)).rgb * 0.111;
+      blur2 += texture2D(u_texture, uv + vec2( sh, sh)).rgb * 0.111;
+      color = color + (color - blur2) * u_sharpness * 0.8;
+    }
+
+    // ── Brillo ──
+    color += u_brightness;
+
+    // ── Contraste ──
+    color = (color - 0.5) * u_contrast + 0.5;
+
+    // ── Saturación via HSL ──
+    vec3 hsl = rgb2hsl(color);
+    hsl.y *= u_saturation;
+    color = hsl2rgb(hsl);
+
+    // ── Calidez (ajuste R/B) ──
+    color.r += u_warmth * 0.004;
+    color.b -= u_warmth * 0.003;
+
+    // ── Viñeta ──
+    if (u_vignette > 0.0) {
+      vec2 center = uv - 0.5;
+      float dist = length(center);
+      float vig = 1.0 - smoothstep(0.3, 0.9, dist * u_vignette * 0.15);
+      color *= vig;
+    }
+
+    // Clamp final
+    color = clamp(color, 0.0, 1.0);
+    gl_FragColor = vec4(color, 1.0);
+  }
+`;
+
+function initWebGL() {
+  const canvas = document.getElementById('glCanvas');
+  gl = canvas.getContext('webgl', { antialias: true, powerPreference: 'high-performance' });
+  if (!gl) { console.warn('WebGL no disponible'); return false; }
+
+  const vs = gl.createShader(gl.VERTEX_SHADER);
+  gl.shaderSource(vs, VS); gl.compileShader(vs);
+  const fs = gl.createShader(gl.FRAGMENT_SHADER);
+  gl.shaderSource(fs, FS); gl.compileShader(fs);
+
+  program = gl.createProgram();
+  gl.attachShader(program, vs); gl.attachShader(program, fs);
+  gl.linkProgram(program); gl.useProgram(program);
+
+  // Quad que cubre toda la pantalla
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+    -1,-1, 0,1,   1,-1, 1,1,   -1,1, 0,0,
+     1,-1, 1,1,   1, 1, 1,0,   -1,1, 0,0
+  ]), gl.STATIC_DRAW);
+
+  const aPos = gl.getAttribLocation(program, 'a_position');
+  const aTex = gl.getAttribLocation(program, 'a_texCoord');
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 16, 0);
+  gl.enableVertexAttribArray(aTex);
+  gl.vertexAttribPointer(aTex, 2, gl.FLOAT, false, 16, 8);
+
+  texture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+  return true;
+}
+
+function renderFrame() {
+  const video = document.getElementById('camVideo');
+  if (!gl || !video || video.readyState < 2) { rafId = requestAnimationFrame(renderFrame); return; }
+
+  const canvas = document.getElementById('glCanvas');
+  if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
+    gl.viewport(0, 0, canvas.width, canvas.height);
   }
 
-  function resetFilters() {
-    document.getElementById('sBrillo').value     = 100;
-    document.getElementById('sContraste').value  = 100;
-    document.getElementById('sSaturacion').value = 100;
-    document.getElementById('sCalidez').value    = 0;
-    document.getElementById('sNitidez').value    = 0;
-    document.getElementById('sBlur').value       = 0;
-    document.getElementById('camVideo').style.filter = '';
-    applyFilters();
+  // Subir frame de video a textura GPU
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
+
+  // Pasar uniforms al shader
+  gl.uniform1f(gl.getUniformLocation(program, 'u_brightness'),  params.brightness);
+  gl.uniform1f(gl.getUniformLocation(program, 'u_contrast'),    params.contrast);
+  gl.uniform1f(gl.getUniformLocation(program, 'u_saturation'),  params.saturation);
+  gl.uniform1f(gl.getUniformLocation(program, 'u_warmth'),      params.warmth);
+  gl.uniform1f(gl.getUniformLocation(program, 'u_sharpness'),   params.sharpness);
+  gl.uniform1f(gl.getUniformLocation(program, 'u_denoise'),     params.denoise);
+  gl.uniform1f(gl.getUniformLocation(program, 'u_skinSmooth'),  params.skinSmooth);
+  gl.uniform1f(gl.getUniformLocation(program, 'u_vignette'),    params.vignette);
+  gl.uniform2f(gl.getUniformLocation(program, 'u_resolution'),  canvas.width, canvas.height);
+
+  gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+  // FPS counter
+  frameCount++;
+  const now = performance.now();
+  if (now - lastFpsTime > 1000) {
+    currentFps = Math.round(frameCount * 1000 / (now - lastFpsTime));
+    document.getElementById('gpuFps').textContent = currentFps + ' FPS';
+    document.getElementById('sFPS').textContent = currentFps;
+    frameCount = 0; lastFpsTime = now;
   }
 
-  function autoFix() {
-    // Configuración óptima para imagen oscura típica de webcam
-    document.getElementById('sBrillo').value     = 140;
-    document.getElementById('sContraste').value  = 115;
-    document.getElementById('sSaturacion').value = 120;
-    document.getElementById('sCalidez').value    = 8;
-    document.getElementById('sNitidez').value    = 1.5;
-    document.getElementById('sBlur').value       = 0;
-    applyFilters();
-  }
+  rafId = requestAnimationFrame(renderFrame);
+}
 
-  // Inicializar sliders al arrancar
-  applyFilters();
+// ── Controles ──────────────────────────────────────────
+function updateShader() {
+  params.brightness  = parseInt(document.getElementById('sBrillo').value) / 100;
+  params.contrast    = parseInt(document.getElementById('sContraste').value) / 100;
+  params.saturation  = parseInt(document.getElementById('sSaturacion').value) / 100;
+  params.warmth      = parseInt(document.getElementById('sCalidez').value);
+  params.sharpness   = parseFloat(document.getElementById('sNitidez').value);
+  params.denoise     = parseFloat(document.getElementById('sNoise').value);
+  params.skinSmooth  = parseFloat(document.getElementById('sSkin').value);
+  params.vignette    = parseFloat(document.getElementById('sVignette').value);
+
+  document.getElementById('vBrillo').textContent     = (params.brightness >= 0 ? '+' : '') + document.getElementById('sBrillo').value;
+  document.getElementById('vContraste').textContent  = params.contrast.toFixed(1) + 'x';
+  document.getElementById('vSaturacion').textContent = params.saturation.toFixed(1) + 'x';
+  document.getElementById('vCalidez').textContent    = (params.warmth >= 0 ? '+' : '') + params.warmth;
+  document.getElementById('vNitidez').textContent    = params.sharpness;
+  document.getElementById('vNoise').textContent      = params.denoise;
+  document.getElementById('vSkin').textContent       = params.skinSmooth;
+  document.getElementById('vVignette').textContent   = params.vignette;
+
+  // Actualizar visual sliders
+  ['sBrillo','sContraste','sSaturacion','sCalidez','sNitidez','sNoise','sSkin','sVignette'].forEach(id => {
+    const el = document.getElementById(id);
+    const min = parseFloat(el.min), max = parseFloat(el.max), val = parseFloat(el.value);
+    const pct = ((val - min) / (max - min)) * 100;
+    el.style.background = `linear-gradient(to right, var(--green) ${pct}%, #ddd ${pct}%)`;
+  });
+}
+
+function resetShader() {
+  document.getElementById('sBrillo').value = 0;
+  document.getElementById('sContraste').value = 100;
+  document.getElementById('sSaturacion').value = 100;
+  document.getElementById('sCalidez').value = 0;
+  document.getElementById('sNitidez').value = 0;
+  document.getElementById('sNoise').value = 0;
+  document.getElementById('sSkin').value = 0;
+  document.getElementById('sVignette').value = 0;
+  updateShader();
+}
+
+function autoFix() {
+  // Preset optimizado para webcam oscura en interior
+  document.getElementById('sBrillo').value = 35;
+  document.getElementById('sContraste').value = 125;
+  document.getElementById('sSaturacion').value = 130;
+  document.getElementById('sCalidez').value = 10;
+  document.getElementById('sNitidez').value = 3;
+  document.getElementById('sNoise').value = 1.5;
+  document.getElementById('sSkin').value = 2;
+  document.getElementById('sVignette').value = 3;
+  updateShader();
+}
+
+function toggleCam(btn) {
+  btn.classList.toggle('on');
+  if (btn.classList.contains('on')) {
+    navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720, frameRate: { ideal: 60, max: 60 } }, audio: false })
+      .then(stream => {
+        camStream = stream;
+        const video = document.getElementById('camVideo');
+        video.srcObject = stream;
+        video.play();
+
+        video.onloadedmetadata = () => {
+          if (initWebGL()) {
+            document.getElementById('glCanvas').style.display = 'block';
+            document.getElementById('placeholder').style.display = 'none';
+            document.getElementById('gpuBadge').classList.add('show');
+            document.getElementById('gpuFps').classList.add('show');
+            document.getElementById('modeBar').textContent = '🟢 GPU activa — procesando en tiempo real';
+            document.getElementById('modeBar').classList.remove('off');
+            lastFpsTime = performance.now();
+            renderFrame();
+            updateShader();
+          }
+        };
+      })
+      .catch(() => {
+        btn.classList.remove('on');
+        alert('No se pudo acceder a la cámara. Revisá los permisos del navegador.');
+      });
+  } else {
+    if (rafId) cancelAnimationFrame(rafId);
+    if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+    document.getElementById('glCanvas').style.display = 'none';
+    document.getElementById('placeholder').style.display = 'flex';
+    document.getElementById('gpuBadge').classList.remove('show');
+    document.getElementById('gpuFps').classList.remove('show');
+    document.getElementById('modeBar').textContent = '🔴 GPU inactiva — activá la cámara';
+    document.getElementById('modeBar').classList.add('off');
+    document.getElementById('sFPS').textContent = '0';
+  }
+}
+
+function toggleOverlay(btn, id) {
+  btn.classList.toggle('on');
+  document.getElementById(id).classList.toggle('show', btn.classList.contains('on'));
+}
+
+function applyProduct() {
+  document.getElementById('ovProdName').textContent = document.getElementById('pName').value || 'Producto';
+  document.getElementById('ovProdPrice').textContent = document.getElementById('pPrice').value || '$0';
+  document.getElementById('ovProduct').classList.add('show');
+  document.getElementById('togProd').classList.add('on');
+}
+
+const destInfo = {
+  'rtmp://live.tiktok.com/live': 'TikTok → En vivo → Copiá la clave de stream',
+  'rtmp://live-api-s.facebook.com:80/rtmp': 'Facebook → Creator Studio → En vivo → Copiá la clave',
+  'rtmp://live.instagram.com/live': 'Instagram → En vivo → Configuración → Copiá la clave',
+  'rtmp://a.rtmp.youtube.com/live2': 'YouTube Studio → En vivo → Configuración → Copiá la clave'
+};
+
+function updateDest() {
+  const sel = document.getElementById('destSelect');
+  document.getElementById('destLabel').textContent = sel.options[sel.selectedIndex].text;
+  document.getElementById('rtmpInfo').innerHTML = destInfo[sel.value] || '';
+}
+
+function startStream() {
+  const key = document.getElementById('rtmpKey').value.trim();
+  if (!key) { alert('Pegá tu Stream Key antes de iniciar.'); return; }
+  streaming = true; elapsed = 0;
+  document.getElementById('statusBadge').textContent = '🔴 EN VIVO';
+  document.getElementById('statusBadge').className = 'badge live';
+  document.getElementById('btnStart').style.display = 'none';
+  document.getElementById('btnStop').style.display = 'block';
+  document.getElementById('ovRec').classList.add('show');
+  document.getElementById('sKbps').textContent = '800';
+  let v = 0;
+  timer = setInterval(() => {
+    elapsed++;
+    const m = String(Math.floor(elapsed/60)).padStart(2,'0');
+    const s = String(elapsed%60).padStart(2,'0');
+    document.getElementById('sTime').textContent = `${m}:${s}`;
+    if (elapsed % 7 === 0) { v += Math.floor(Math.random()*6); document.getElementById('sViewers').textContent = v; }
+    if (socket) socket.emit('stats:update', { time: elapsed, viewers: v, fps: currentFps, kbps: 800 });
+  }, 1000);
+}
+
+function stopStream() {
+  streaming = false; clearInterval(timer);
+  document.getElementById('statusBadge').textContent = 'Offline';
+  document.getElementById('statusBadge').className = 'badge';
+  document.getElementById('btnStart').style.display = 'block';
+  document.getElementById('btnStop').style.display = 'none';
+  document.getElementById('ovRec').classList.remove('show');
+  document.getElementById('sTime').textContent = '00:00';
+  document.getElementById('sViewers').textContent = '0';
+  document.getElementById('sKbps').textContent = '0';
+}
+
+updateDest();
+updateShader();
 </script>
 </body>
 </html>
